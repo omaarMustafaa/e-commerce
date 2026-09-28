@@ -1,45 +1,52 @@
 import { decode } from "next-auth/jwt"
 import { cookies } from "next/headers"
 
-// On HTTPS (Vercel/production), NextAuth prefixes cookies with __Secure-
-// On HTTP (localhost), the cookie name is plain authjs.session-token
-function getSessionCookieName(): string {
-  const isSecure = process.env.NEXTAUTH_URL?.startsWith("https://") ||
-    process.env.VERCEL_URL !== undefined ||
-    process.env.NODE_ENV === "production"
-  return isSecure ? "__Secure-authjs.session-token" : "authjs.session-token"
+const AUTH_SECRET = process.env.AUTH_SECRET || "3caf59787df9e79a01267aa5c43e863939dd9e5bbe02e3a2ef78d6273d09dd00"
+
+async function decodeSessionToken(sessionToken: string, cookieName: string) {
+  // In NextAuth v5, the salt IS the full cookie name (including __Secure- prefix)
+  return decode({
+    token: sessionToken,
+    secret: AUTH_SECRET,
+    salt: cookieName,
+  })
 }
 
-export async function getUserToken(){
-    const cookie = await cookies()
-    const cookieName = getSessionCookieName()
-    const session_Token = cookie.get(cookieName)?.value
-      ?? cookie.get("authjs.session-token")?.value
-    if (!session_Token) return undefined
-    const realToken = await decode({
-      token : session_Token ,
-      secret : process.env.AUTH_SECRET || '3caf59787df9e79a01267aa5c43e863939dd9e5bbe02e3a2ef78d6273d09dd00',
-      salt : cookieName.replace("__Secure-", "") // salt is always without prefix
-    })
-    return realToken?.credentialsToken
+async function getSessionCookie() {
+  const cookie = await cookies()
+  // Try secure cookie first (Vercel/HTTPS production)
+  const secureName = "__Secure-authjs.session-token"
+  const secureCookie = cookie.get(secureName)
+  if (secureCookie?.value) {
+    return { value: secureCookie.value, name: secureName }
   }
-
-
-  export async function getUserId() {
-  const cookie = await cookies();
-  const cookieName = getSessionCookieName()
-  const sessionToken = cookie.get(cookieName)?.value
-    ?? cookie.get("authjs.session-token")?.value;
-
-  if (!sessionToken) {
-    return null;
+  // Fallback to plain cookie (local HTTP dev)
+  const plainName = "authjs.session-token"
+  const plainCookie = cookie.get(plainName)
+  if (plainCookie?.value) {
+    return { value: plainCookie.value, name: plainName }
   }
+  return null
+}
 
-  const session = await decode({
-    token: sessionToken,
-    secret: process.env.AUTH_SECRET || "3caf59787df9e79a01267aa5c43e863939dd9e5bbe02e3a2ef78d6273d09dd00",
-    salt: "authjs.session-token",
-  });
+export async function getUserToken() {
+  const session = await getSessionCookie()
+  if (!session) return undefined
+  try {
+    const decoded = await decodeSessionToken(session.value, session.name)
+    return decoded?.credentialsToken
+  } catch {
+    return undefined
+  }
+}
 
-  return session?.userId as string | undefined;
+export async function getUserId() {
+  const session = await getSessionCookie()
+  if (!session) return null
+  try {
+    const decoded = await decodeSessionToken(session.value, session.name)
+    return decoded?.userId as string | undefined
+  } catch {
+    return null
+  }
 }
