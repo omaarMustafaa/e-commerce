@@ -7,9 +7,17 @@ export async function proxy(req: NextRequest) {
 
   const isAuth = pathName === "/login" || pathName === "/register";
 
+  // On HTTPS (Vercel/production), NextAuth uses the __Secure- cookie prefix
+  const isSecure = req.url.startsWith("https://")
+  const cookieName = isSecure
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token"
+
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    cookieName,
+    salt: "authjs.session-token",
   });
 
   if (isAuth) {
