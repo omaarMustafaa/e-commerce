@@ -25,6 +25,7 @@ declare module "next-auth/jwt" {
 }
 
 export const authJsConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET || "3caf59787df9e79a01267aa5c43e863939dd9e5bbe02e3a2ef78d6273d09dd00",
   providers: [
     Credentials({
       name: "Loggin Fresh Cart",

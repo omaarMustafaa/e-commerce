@@ -5,17 +5,26 @@ import { UpdateCartResponse } from "@/components/CartTable/CartProduct/UpdateCar
 
 
 export async function getLoggedUserCart():Promise<CartResponse>{
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/cart` ,{
-        method : "GET" ,
-        headers : {
-            token : await getUserToken() as string,
-            "content-type" : "application/json"
-        },
-        cache: "no-store",
-    })
+    try {
+        const token = await getUserToken()
+        if (!token) {
+            return { numOfCartItems: 0, data: { products: [] } } as any
+        }
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://ecommerce.routemisr.com"
+        const response = await fetch(`${baseUrl}/api/v1/cart` ,{
+            method : "GET" ,
+            headers : {
+                token : token as string,
+                "content-type" : "application/json"
+            },
+            cache: "no-store",
+        })
 
-    const data = await response.json()
-    return data
+        const data = await response.json()
+        return data
+    } catch {
+        return { numOfCartItems: 0, data: { products: [] } } as any
+    }
 }
 
 export async function removeProductFromCart(productId : string){

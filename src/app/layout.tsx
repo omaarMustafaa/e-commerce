@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <MySession>
           <FirstNav />
-          <Navbar cart={cartData.numOfCartItems} wishList={wishListData.count} />
+          <Navbar cart={cartData?.numOfCartItems || 0} wishList={wishListData?.count || 0} />
           {children}
           <Toaster position="top-center" reverseOrder={false} />
           <Footer />
