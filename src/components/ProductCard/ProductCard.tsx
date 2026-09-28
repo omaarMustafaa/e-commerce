@@ -5,7 +5,13 @@ import Link from "next/link";
 import AddToCartBtn from "./AddToCartBtn/AddToCartBtn";
 import AddToWishlistBtn from "./AddToWishlistBtn/AddToWishlistBtn";
 
-export default function ProductCard({ prod ,iswishListed}: { prod: product ,iswishListed :boolean}) {
+export default function ProductCard({
+  prod,
+  iswishListed = false,
+}: {
+  prod: product;
+  iswishListed?: boolean;
+}) {
   const {
     _id,
     category,

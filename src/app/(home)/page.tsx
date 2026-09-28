@@ -27,7 +27,7 @@ export default async function Home() {
 
   const wishListData = await getLoggedUserWishlist()
 
-  const wishlistIds = wishListData.data.map((wishlist) => wishlist._id)
+  const wishlistIds = wishListData?.data ? wishListData.data.map((wishlist: any) => wishlist._id) : []
 
   const imageList = [<div
     className="relative h-100 bg-cover bg-center flex items-center"

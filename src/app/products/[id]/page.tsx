@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Box, Check, RotateCcw, Star, Truck } from "lucide-react";
 import ProductCard from "@/components/ProductCard/ProductCard";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { getLoggedUserWishlist } from "@/app/wishlist/wishlist.action";
 
 interface PageProps {
   params: Promise<{
@@ -26,6 +27,8 @@ export default async function page({ params }: PageProps) {
 
   const { id } = await params;
   const product = await getProductDetails(id)
+  const wishListData = await getLoggedUserWishlist();
+  const wishlistIds = wishListData?.data ? wishListData.data.map((wishlist: any) => wishlist._id) : [];
   const {
     sold,
     category,
@@ -553,7 +556,7 @@ data-active:hover:bg-main-color/20
                   key={product._id}
                   className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
                 >
-                  <ProductCard prod={product} />
+                  <ProductCard prod={product} iswishListed={wishlistIds.includes(product._id)} />
                 </CarouselItem>
               ))}
             </CarouselContent>

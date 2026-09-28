@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 
 export default function AddToWishlistBtn({
   productId,
-  iswishListed,
+  iswishListed = false,
 }: {
   productId: string;
-  iswishListed: boolean;
+  iswishListed?: boolean;
 }) {
   const [isWishlist, setIsWishlist] = useState(iswishListed);
   const [loading, setLoading] = useState(false);

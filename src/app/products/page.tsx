@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader/PageHeader";
 import Link from "next/link";
 import Image from "next/image";
 import NotFoundProuduct from "@/components/NotFoundProuduct/NotFoundProuduct";
+import { getLoggedUserWishlist } from "../wishlist/wishlist.action";
 
 interface PageProps {
   searchParams: Promise<{ brand?: string }>;
@@ -13,6 +14,9 @@ interface PageProps {
 export default async function page({ searchParams }: PageProps) {
   const { brand } = await searchParams;
   const productList = await getAllProducts(brand);
+
+  const wishListData = await getLoggedUserWishlist();
+  const wishlistIds = wishListData?.data ? wishListData.data.map((wishlist: any) => wishlist._id) : [];
 
   const brandData = productList?.data?.[0]?.brand;
   const brandName = brandData?.name;
@@ -81,7 +85,7 @@ export default async function page({ searchParams }: PageProps) {
         {productList?.data && productList.data.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
             {productList.data.map((e: any) => (
-              <ProductCard key={e._id} prod={e} />
+              <ProductCard key={e._id} prod={e} iswishListed={wishlistIds.includes(e._id)} />
             ))}
           </div>
         ) : (
